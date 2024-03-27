@@ -3,12 +3,16 @@ import typescriptPlugin from '@typescript-eslint/eslint-plugin';
 import typescriptParser from '@typescript-eslint/parser';
 import importPlugin from 'eslint-plugin-import';
 import prettierPlugin from 'eslint-plugin-prettier';
+import globals from 'globals';
 
 import prettierConfig from './prettier.config.js';
 
 export default [
   js.configs['recommended'],
   {
+    languageOptions: {
+      globals: { ...globals.node },
+    },
     plugins: {
       import: importPlugin,
       prettier: prettierPlugin,
