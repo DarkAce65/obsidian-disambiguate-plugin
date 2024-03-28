@@ -9,16 +9,22 @@
   "license": "MIT",
   "scripts": {
     "prepare": "husky",
-    "lint": "prettier --list-different \"*.config.{js,mjs,ts}\" \"tsconfig.json\" \"src/**/*.{js,ts}\" && eslint \"*.config.{js,mjs,ts}\" \"src/**/*.{js,ts}\"",
-    "eslint:fix": "eslint --fix \"*.config.{js,mjs,ts}\" \"src/**/*.{js,ts}\"",
-    "prettier:write": "prettier --write \"*.config.{js,mjs,ts}\" \"tsconfig.json\" \"src/**/*.{js,ts}\"",
-    "dev": "node esbuild.config.mjs",
-    "build": "tsc --noEmit --skipLibCheck && node esbuild.config.mjs production",
-    "version": "node version-bump.mjs && git add manifest.json versions.json"
+    "prettier": "prettier \"manifest.json\" \"versions.json\" \"tsconfig.json\" \"*.config.{js,mjs,ts}\" \"src/**/*.{js,ts}\" \"utils/**/*.{js,mjs,ts}\"",
+    "eslint": "eslint \"*.config.{js,mjs,ts}\" \"src/**/*.{js,ts}\" \"utils/**/*.{js,mjs,ts}\"",
+    "lint": "npm run prettier -- --list-different && npm run eslint",
+    "eslint:fix": "npm run eslint -- --fix",
+    "prettier:write": "npm run prettier -- --write",
+    "dev": "node utils/esbuild.config.mjs",
+    "build": "tsc --noEmit --skipLibCheck && node utils/esbuild.config.mjs production",
+    "version": "node utils/version-bump.mjs"
   },
   "lint-staged": {
-    "*.{ts,js}": "eslint --max-warnings=0",
-    "*.{js,ts}": "prettier --list-different"
+    "*.{js,mjs,ts}": [
+      "prettier --list-different",
+      "eslint --max-warnings=0"
+    ],
+    "manifest.json": "prettier --list-different",
+    "versions.json": "prettier --list-different"
   },
   "devDependencies": {
     "@types/node": "^20.11.30",
