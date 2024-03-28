@@ -3,6 +3,7 @@ import typescriptPlugin from '@typescript-eslint/eslint-plugin';
 import typescriptParser from '@typescript-eslint/parser';
 import importPlugin from 'eslint-plugin-import';
 import prettierPlugin from 'eslint-plugin-prettier';
+import solidPlugin from 'eslint-plugin-solid';
 import globals from 'globals';
 
 import prettierConfig from './prettier.config.js';
@@ -11,7 +12,7 @@ export default [
   js.configs['recommended'],
   {
     languageOptions: {
-      globals: { ...globals.node },
+      globals: { ...globals.browser, ...globals.node },
     },
     plugins: {
       import: importPlugin,
@@ -54,9 +55,11 @@ export default [
     },
     plugins: {
       '@typescript-eslint': typescriptPlugin,
+      solid: solidPlugin,
     },
     rules: {
       ...typescriptPlugin.configs['recommended-type-checked'].rules,
+      ...solidPlugin.configs['typescript'].rules,
       '@typescript-eslint/explicit-function-return-type': ['warn', { allowExpressions: true }],
       '@typescript-eslint/no-floating-promises': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',

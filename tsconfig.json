@@ -7,16 +7,19 @@
     "lib": ["DOM", "ESNext"],
     "moduleResolution": "NodeNext",
 
+    "allowImportingTsExtensions": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "importHelpers": true,
     "inlineSourceMap": true,
     "inlineSources": true,
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
     "noEmit": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true
   },
-  "include": ["**/*.ts"]
+  "include": ["**/*.ts", "**/*.tsx"]
 }
