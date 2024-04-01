@@ -27,7 +27,7 @@ class DisambiguatePlugin extends Plugin {
             );
 
             if (bestMatch === null) {
-              const state: DisambiguationViewState = { linktext, sourcePath, newLeaf };
+              const state: DisambiguationViewState = { linktext, sourcePath };
               return this.getLeaf(newLeaf).setViewState({
                 type: DISAMBIGUATION_VIEW_TYPE,
                 active: true,

@@ -8,7 +8,6 @@ export const DISAMBIGUATION_VIEW_TYPE = 'disambiguation-view';
 export interface DisambiguationViewState {
   linktext: string;
   sourcePath: string;
-  newLeaf?: PaneType | boolean;
 }
 
 class DisambiguationView extends ItemView {
