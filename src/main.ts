@@ -1,10 +1,11 @@
 import { around } from 'monkey-around';
-import { Plugin, Workspace, getLinkpath } from 'obsidian';
+import { CachedMetadata, Plugin, TFile, Workspace, getLinkpath } from 'obsidian';
 
 import DisambiguationView, {
   DISAMBIGUATION_VIEW_TYPE,
   DisambiguationViewState,
 } from './DisambiguationView.tsx';
+import FileAliasesMap from './FileAliasesMap.ts';
 
 class DisambiguatePlugin extends Plugin {
   onload(): void {
@@ -13,6 +14,34 @@ class DisambiguatePlugin extends Plugin {
       defaultMod: false,
       display: 'Disambiguation view',
     });
+
+    const fileAliases = new FileAliasesMap();
+    for (const file of this.app.vault.getMarkdownFiles()) {
+      const cachedMetadata = this.app.metadataCache.getFileCache(file);
+      if (cachedMetadata !== null) {
+        fileAliases.updateFileAliases(file, cachedMetadata);
+      }
+    }
+
+    const onFileChange = (file: TFile, cache: CachedMetadata): void => {
+      fileAliases.updateFileAliases(file, cache);
+    };
+
+    this.registerEvent(
+      this.app.vault.on('rename', (file) => {
+        if (file instanceof TFile) {
+          const cache = this.app.metadataCache.getFileCache(file);
+          if (cache !== null) {
+            onFileChange(file, cache);
+          }
+        }
+      }),
+    );
+    this.registerEvent(
+      this.app.metadataCache.on('changed', (file, data, cache) => {
+        onFileChange(file, cache);
+      }),
+    );
 
     this.register(
       around(Workspace.prototype, {
