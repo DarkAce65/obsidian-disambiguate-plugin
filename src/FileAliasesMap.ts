@@ -1,6 +1,8 @@
+import { matchSorter, rankings } from 'match-sorter';
 import { CachedMetadata, TFile, parseFrontMatterAliases, parseFrontMatterEntry } from 'obsidian';
 
 import SetMultimap from './SetMultimap.ts';
+import { compareFileDistance } from './utils.ts';
 
 class FileAliasesMap {
   private fileToAliases: SetMultimap<TFile, string>;
@@ -24,6 +26,19 @@ class FileAliasesMap {
       }
     }
     return aliases;
+  }
+
+  getMatches(linktext: string, sourceFile: TFile): TFile[] {
+    const filesWithAliases = Array.from(this.fileToAliases.entriesByKey()).filter(
+      ([file]) => file.path !== sourceFile.path,
+    );
+    const matchedFiles = matchSorter(filesWithAliases, linktext, {
+      keys: [([, aliases]) => Array.from(aliases)],
+      threshold: rankings.WORD_STARTS_WITH,
+      baseSort: ({ item: [a] }, { item: [b] }) => compareFileDistance(sourceFile, a, b),
+    });
+
+    return matchedFiles.map(([file]) => file);
   }
 
   updateFileAliases(file: TFile, cache: CachedMetadata): void {

@@ -5,6 +5,22 @@ class SetMultimap<Key, Value> {
     this.map = new Map();
   }
 
+  keys(): IterableIterator<Key> {
+    return this.map.keys();
+  }
+
+  entriesByKey(): IterableIterator<[Key, Set<Value>]> {
+    return this.map.entries();
+  }
+
+  *entries(): IterableIterator<[Key, Value]> {
+    for (const [key, values] of this.map.entries()) {
+      for (const value of values) {
+        yield [key, value];
+      }
+    }
+  }
+
   hasKey(key: Key): boolean {
     return this.map.has(key);
   }
