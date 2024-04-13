@@ -53,8 +53,8 @@ class DisambiguationView extends ItemView {
           <DisambiguationPage
             view={this}
             fileAliases={this.fileAliases}
-            sourcePath={sourcePath}
             linktext={linktext}
+            sourcePath={sourcePath}
             openFile={this.openFile.bind(this)}
           />
         ),

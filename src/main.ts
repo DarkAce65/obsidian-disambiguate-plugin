@@ -58,7 +58,7 @@ class DisambiguatePlugin extends Plugin {
               return Promise.resolve();
             }
 
-            const potentialMatches = fileAliases.getMatches(
+            const potentialMatches = fileAliases.getLinkMatches(
               linktext,
               app.vault.getFileByPath(sourcePath)!,
             );

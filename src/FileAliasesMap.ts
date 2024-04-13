@@ -28,17 +28,25 @@ class FileAliasesMap {
     return aliases;
   }
 
-  getMatches(linktext: string, sourceFile: TFile): TFile[] {
-    const filesWithAliases = Array.from(this.fileToAliases.entriesByKey()).filter(
+  private getFilesWithAliases(sourceFile: TFile): [TFile, Set<string>][] {
+    return Array.from(this.fileToAliases.entriesByKey()).filter(
       ([file]) => file.path !== sourceFile.path,
     );
-    const matchedFiles = matchSorter(filesWithAliases, linktext, {
+  }
+
+  search(query: string, sourceFile: TFile): TFile[] {
+    return matchSorter(this.getFilesWithAliases(sourceFile), query, {
+      keys: [([file, aliases]) => [file.path, ...aliases]],
+      baseSort: ({ item: [a] }, { item: [b] }) => compareFileDistance(sourceFile, a, b),
+    }).map(([file]) => file);
+  }
+
+  getLinkMatches(linktext: string, sourceFile: TFile): TFile[] {
+    return matchSorter(this.getFilesWithAliases(sourceFile), linktext, {
       keys: [([, aliases]) => Array.from(aliases)],
       threshold: rankings.WORD_STARTS_WITH,
       baseSort: ({ item: [a] }, { item: [b] }) => compareFileDistance(sourceFile, a, b),
-    });
-
-    return matchedFiles.map(([file]) => file);
+    }).map(([file]) => file);
   }
 
   updateFileAliases(file: TFile, cache: CachedMetadata): void {

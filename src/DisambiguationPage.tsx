@@ -15,13 +15,13 @@ import { hoverLink } from './utils.ts';
 function DisambiguationPage(props: {
   view: View;
   fileAliases: FileAliasesMap;
-  sourcePath: string;
   linktext: string;
+  sourcePath: string;
   openFile: (file: TFile, newLeaf: PaneType | boolean) => void;
 }): JSX.Element {
   const app = (): App => props.view.app;
   const matchedFiles = createMemo<TFile[]>(() =>
-    props.fileAliases.getMatches(props.linktext, app().vault.getFileByPath(props.sourcePath)!),
+    props.fileAliases.getLinkMatches(props.linktext, app().vault.getFileByPath(props.sourcePath)!),
   );
   const filesWithData = createMemo(() =>
     matchedFiles().map((file) => {
