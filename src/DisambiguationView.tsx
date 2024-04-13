@@ -1,18 +1,27 @@
-import { IconName, ItemView, PaneType, TFile, ViewStateResult } from 'obsidian';
+import { IconName, ItemView, PaneType, TFile, ViewStateResult, WorkspaceLeaf } from 'obsidian';
 import { render } from 'solid-js/web';
 
 import DisambiguationPage from './DisambiguationPage.tsx';
+import FileAliasesMap from './FileAliasesMap.ts';
 
 export const DISAMBIGUATION_VIEW_TYPE = 'disambiguation-view';
 
 export interface DisambiguationViewState {
   linktext: string;
   sourcePath: string;
+  newLeaf?: PaneType | boolean;
 }
 
 class DisambiguationView extends ItemView {
   private dispose: (() => void) | null = null;
   private state: DisambiguationViewState | null = null;
+
+  constructor(
+    leaf: WorkspaceLeaf,
+    private fileAliases: FileAliasesMap,
+  ) {
+    super(leaf);
+  }
 
   override getViewType(): string {
     return DISAMBIGUATION_VIEW_TYPE;
@@ -38,11 +47,14 @@ class DisambiguationView extends ItemView {
     this.dispose?.();
 
     if (this.state !== null) {
+      const { linktext, sourcePath } = this.state;
       this.dispose = render(
         () => (
           <DisambiguationPage
             view={this}
-            linktext={this.state!.linktext}
+            fileAliases={this.fileAliases}
+            sourcePath={sourcePath}
+            linktext={linktext}
             openFile={this.openFile.bind(this)}
           />
         ),
