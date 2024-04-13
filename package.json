@@ -46,6 +46,7 @@
     "typescript": "^5.4.3"
   },
   "dependencies": {
+    "match-sorter": "^6.3.4",
     "monkey-around": "^3.0.0",
     "solid-js": "^1.8.16"
   }
