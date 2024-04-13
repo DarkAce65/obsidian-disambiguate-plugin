@@ -1,5 +1,5 @@
 import { around } from 'monkey-around';
-import { CachedMetadata, Plugin, TFile, Workspace, getLinkpath } from 'obsidian';
+import { Plugin, TFile, Workspace, getLinkpath } from 'obsidian';
 
 import DisambiguationView, {
   DISAMBIGUATION_VIEW_TYPE,
@@ -9,12 +9,6 @@ import FileAliasesMap from './FileAliasesMap.ts';
 
 class DisambiguatePlugin extends Plugin {
   onload(): void {
-    this.registerView(DISAMBIGUATION_VIEW_TYPE, (leaf) => new DisambiguationView(leaf));
-    this.registerHoverLinkSource(DISAMBIGUATION_VIEW_TYPE, {
-      defaultMod: false,
-      display: 'Disambiguation view',
-    });
-
     const fileAliases = new FileAliasesMap();
     for (const file of this.app.vault.getMarkdownFiles()) {
       const cachedMetadata = this.app.metadataCache.getFileCache(file);
@@ -23,39 +17,52 @@ class DisambiguatePlugin extends Plugin {
       }
     }
 
-    const onFileChange = (file: TFile, cache: CachedMetadata): void => {
-      fileAliases.updateFileAliases(file, cache);
-    };
+    this.registerView(
+      DISAMBIGUATION_VIEW_TYPE,
+      (leaf) => new DisambiguationView(leaf, fileAliases),
+    );
+    this.registerHoverLinkSource(DISAMBIGUATION_VIEW_TYPE, {
+      defaultMod: false,
+      display: 'Disambiguation view',
+    });
 
     this.registerEvent(
       this.app.vault.on('rename', (file) => {
         if (file instanceof TFile) {
           const cache = this.app.metadataCache.getFileCache(file);
           if (cache !== null) {
-            onFileChange(file, cache);
+            fileAliases.updateFileAliases(file, cache);
           }
         }
       }),
     );
+
     this.registerEvent(
       this.app.metadataCache.on('changed', (file, data, cache) => {
-        onFileChange(file, cache);
+        fileAliases.updateFileAliases(file, cache);
       }),
     );
 
     this.register(
       around(Workspace.prototype, {
-        openLinkText: (existingFunction) => {
+        openLinkText: (_openLinkText) => {
           const app = this.app;
 
           return async function (this: Workspace, ...args) {
             const [linktext, sourcePath, newLeaf] = args;
-            const bestMatch = app.metadataCache.getFirstLinkpathDest(
-              getLinkpath(linktext),
-              sourcePath,
-            );
+            const linkpath = getLinkpath(linktext);
 
+            const bestMatch = app.metadataCache.getFirstLinkpathDest(linkpath, sourcePath);
             if (bestMatch === null) {
+              // TODO: Handle no matching link
+              return Promise.resolve();
+            }
+
+            const potentialMatches = fileAliases.getMatches(
+              linktext,
+              app.vault.getFileByPath(sourcePath)!,
+            );
+            if (potentialMatches.length > 1) {
               const state: DisambiguationViewState = { linktext, sourcePath };
               return this.getLeaf(newLeaf).setViewState({
                 type: DISAMBIGUATION_VIEW_TYPE,
@@ -63,7 +70,8 @@ class DisambiguatePlugin extends Plugin {
                 state,
               });
             }
-            return existingFunction.apply(this, args);
+
+            return _openLinkText.apply(this, args);
           };
         },
       }),
