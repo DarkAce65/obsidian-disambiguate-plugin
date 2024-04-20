@@ -1,28 +1,11 @@
 import { matchSorter } from 'match-sorter';
-import {
-  AbstractInputSuggest,
-  App,
-  Modal,
-  SuggestModal,
-  TFile,
-  TFolder,
-  normalizePath,
-} from 'obsidian';
+import { AbstractInputSuggest, App, Modal, SuggestModal, TFile, normalizePath } from 'obsidian';
 import { ParentProps, createMemo, createSignal, onMount } from 'solid-js';
 import { JSX } from 'solid-js/jsx-runtime';
 import { render } from 'solid-js/web';
 
 import FileAliasesMap from './FileAliasesMap.ts';
-import { ensureExtension } from './utils.ts';
-
-function getFolderPaths(folder: TFolder): string[] {
-  const childFolders = folder.children.filter((f): f is TFolder => f instanceof TFolder);
-  if (childFolders.length === 0) {
-    return [folder.path];
-  }
-
-  return [folder.path, ...childFolders.flatMap((childFolder) => getFolderPaths(childFolder))];
-}
+import { ensureExtension, getFolderPaths } from './utils.ts';
 
 interface SuggestedFolder {
   type: 'new' | 'existing' | 'placeholder';

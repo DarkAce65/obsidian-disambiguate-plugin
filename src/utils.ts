@@ -1,4 +1,4 @@
-import { TFile, View, Workspace } from 'obsidian';
+import { TFile, TFolder, View, Workspace } from 'obsidian';
 
 function ensureLeadingAndTrailingSlash(path: string): string {
   let normalizedPath = path;
@@ -13,6 +13,15 @@ function ensureLeadingAndTrailingSlash(path: string): string {
 
 export function ensureExtension(path: string, extension: string): string {
   return path.toLowerCase().endsWith(`.${extension.toLowerCase()}`) ? path : `${path}.${extension}`;
+}
+
+export function getFolderPaths(root: TFolder): string[] {
+  const childFolders = root.children.filter((f): f is TFolder => f instanceof TFolder);
+  if (childFolders.length === 0) {
+    return [root.path];
+  }
+
+  return [root.path, ...childFolders.flatMap((childFolder) => getFolderPaths(childFolder))];
 }
 
 export function hoverLink(
