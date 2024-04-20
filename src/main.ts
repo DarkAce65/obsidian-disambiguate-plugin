@@ -5,8 +5,8 @@ import DisambiguationView, {
   DISAMBIGUATION_VIEW_TYPE,
   DisambiguationViewState,
 } from './DisambiguationView.tsx';
-import FileAliasesMap from './FileAliasesMap.ts';
 import UnresolvedLinkModal from './UnresolvedLinkModal.tsx';
+import FileAliasesMap from './utils/FileAliasesMap.ts';
 
 class DisambiguatePlugin extends Plugin {
   onload(): void {
@@ -116,6 +116,8 @@ class DisambiguatePlugin extends Plugin {
         },
       }),
     );
+
+    console.log(`Loaded ${this.manifest.name} plugin`);
   }
 }
 

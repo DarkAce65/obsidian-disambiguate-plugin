@@ -1,8 +1,8 @@
 import { App, Keymap, PaneType, TFile, View } from 'obsidian';
 import { For, JSX, createMemo } from 'solid-js';
 
-import FileAliasesMap from './FileAliasesMap.ts';
-import { hoverLink } from './utils.ts';
+import FileAliasesMap from '../utils/FileAliasesMap.ts';
+import { hoverLink } from '../utils/utils.ts';
 
 function DisambiguationPage(props: {
   view: View;

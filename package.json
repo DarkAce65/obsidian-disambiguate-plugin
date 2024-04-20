@@ -9,8 +9,8 @@
   "license": "MIT",
   "scripts": {
     "prepare": "husky",
-    "prettier": "prettier \"manifest.json\" \"versions.json\" \"tsconfig.json\" \"*.config.{js,mjs,ts}\" \"src/**/*.{js,ts}\" \"utils/**/*.{js,mjs,ts}\"",
-    "eslint": "eslint \"*.config.{js,mjs,ts}\" \"src/**/*.{js,ts}\" \"utils/**/*.{js,mjs,ts}\"",
+    "prettier": "prettier \"manifest.json\" \"versions.json\" \"tsconfig.json\" \"*.config.{js,mjs,ts,tsx}\" \"src/**/*.{js,ts,tsx}\" \"utils/**/*.{js,mjs,ts,tsx}\"",
+    "eslint": "eslint \"*.config.{js,mjs,ts,tsx}\" \"src/**/*.{js,ts,tsx}\" \"utils/**/*.{js,mjs,ts,tsx}\"",
     "lint": "npm run prettier -- --list-different && npm run eslint",
     "eslint:fix": "npm run eslint -- --fix",
     "prettier:write": "npm run prettier -- --write",
@@ -19,7 +19,7 @@
     "version": "node utils/version-bump.mjs"
   },
   "lint-staged": {
-    "*.{js,mjs,ts}": [
+    "*.{js,mjs,ts,tsx}": [
       "prettier --list-different",
       "eslint --max-warnings=0"
     ],

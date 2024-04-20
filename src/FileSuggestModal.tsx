@@ -1,6 +1,6 @@
 import { App, SuggestModal, TFile } from 'obsidian';
 
-import FileAliasesMap from './FileAliasesMap.ts';
+import FileAliasesMap from './utils/FileAliasesMap.ts';
 
 class FileSuggestModal extends SuggestModal<TFile> {
   constructor(

@@ -1,8 +1,8 @@
 import { App, Modal, TFile } from 'obsidian';
 import { render } from 'solid-js/web';
 
-import FileAliasesMap from './FileAliasesMap.ts';
-import UnresolvedLinkModalComponent from './UnresolvedLinkModalComponent.tsx';
+import UnresolvedLinkModalComponent from './components/UnresolvedLinkModalComponent.tsx';
+import FileAliasesMap from './utils/FileAliasesMap.ts';
 
 class UnresolvedLinkModal extends Modal {
   private dispose: (() => void) | null = null;

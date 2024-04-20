@@ -1,7 +1,7 @@
 import { matchSorter } from 'match-sorter';
 import { AbstractInputSuggest, App, normalizePath } from 'obsidian';
 
-import { getFolderPaths } from './utils.ts';
+import { getFolderPaths } from './utils/utils.ts';
 
 export interface SuggestedFolder {
   type: 'new' | 'existing' | 'placeholder';

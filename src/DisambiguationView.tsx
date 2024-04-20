@@ -1,8 +1,8 @@
 import { IconName, ItemView, PaneType, TFile, ViewStateResult, WorkspaceLeaf } from 'obsidian';
 import { render } from 'solid-js/web';
 
-import DisambiguationPage from './DisambiguationPage.tsx';
-import FileAliasesMap from './FileAliasesMap.ts';
+import DisambiguationPage from './components/DisambiguationPage.tsx';
+import FileAliasesMap from './utils/FileAliasesMap.ts';
 
 export const DISAMBIGUATION_VIEW_TYPE = 'disambiguation-view';
 

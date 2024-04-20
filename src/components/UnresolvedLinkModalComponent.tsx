@@ -1,11 +1,12 @@
 import { App, TFile, normalizePath } from 'obsidian';
 import { JSX, createMemo, createSignal, onMount } from 'solid-js';
 
-import FileAliasesMap from './FileAliasesMap.ts';
-import FileSuggestModal from './FileSuggestModal.tsx';
-import FolderPathInputSuggest, { SuggestedFolder } from './FolderPathInputSuggest.tsx';
+import FileSuggestModal from '../FileSuggestModal.tsx';
+import FolderPathInputSuggest, { SuggestedFolder } from '../FolderPathInputSuggest.tsx';
+import FileAliasesMap from '../utils/FileAliasesMap.ts';
+import { ensureExtension } from '../utils/utils.ts';
+
 import FormControl from './FormControl.tsx';
-import { ensureExtension } from './utils.ts';
 
 function UnresolvedLinkModalComponent(props: {
   app: App;
