@@ -5,33 +5,46 @@ import SetMultimap from './SetMultimap.ts';
 import { compareFileDistance } from './utils.ts';
 
 class FileAliasesMap {
+  private fileToTitle: Map<TFile, string | null>;
   private fileToAliases: SetMultimap<TFile, string>;
   private aliasToFiles: SetMultimap<string, TFile>;
 
   constructor() {
+    this.fileToTitle = new Map();
     this.fileToAliases = new SetMultimap();
     this.aliasToFiles = new SetMultimap();
   }
 
-  private getAliases(cache: CachedMetadata): Set<string> {
-    const aliases = new Set<string>();
+  private getAliasesFromMetadata(cache: CachedMetadata): {
+    title: string | null;
+    allAliases: Set<string>;
+  } {
+    const allAliases = new Set<string>();
     const title: string | null = parseFrontMatterEntry(cache.frontmatter, 'title');
     const frontmatterAliases = parseFrontMatterAliases(cache.frontmatter);
     if (title !== null) {
-      aliases.add(title);
+      allAliases.add(title);
     }
     if (frontmatterAliases !== null) {
       for (const alias of frontmatterAliases) {
-        aliases.add(alias);
+        allAliases.add(alias);
       }
     }
-    return aliases;
+    return { title, allAliases };
   }
 
   private getFilesWithAliases(sourceFile: TFile): [TFile, Set<string>][] {
     return Array.from(this.fileToAliases.entriesByKey()).filter(
       ([file]) => file.path !== sourceFile.path,
     );
+  }
+
+  getFileTitle(file: TFile): string {
+    return this.fileToTitle.get(file) ?? file.basename;
+  }
+
+  getAliases(file: TFile): Set<string> | undefined {
+    return this.fileToAliases.get(file);
   }
 
   search(query: string, sourceFile: TFile): TFile[] {
@@ -51,17 +64,18 @@ class FileAliasesMap {
 
   updateFileAliases(file: TFile, cache: CachedMetadata): void {
     const existingAliases = this.fileToAliases.get(file);
-    const aliases = this.getAliases(cache);
+    const { title, allAliases } = this.getAliasesFromMetadata(cache);
 
-    this.fileToAliases.set(file, aliases);
-    for (const alias of aliases) {
+    this.fileToTitle.set(file, title);
+    this.fileToAliases.set(file, allAliases);
+    for (const alias of allAliases) {
       if (existingAliases === undefined || !existingAliases.has(alias)) {
         this.aliasToFiles.add(alias, file);
       }
     }
     if (existingAliases !== undefined) {
       for (const existingAlias of existingAliases) {
-        if (!aliases.has(existingAlias)) {
+        if (!allAliases.has(existingAlias)) {
           this.aliasToFiles.remove(existingAlias, file);
         }
       }
@@ -75,6 +89,7 @@ class FileAliasesMap {
         this.aliasToFiles.remove(existingAlias, file);
       }
     }
+    this.fileToTitle.delete(file);
     this.fileToAliases.delete(file);
   }
 }

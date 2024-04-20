@@ -1,4 +1,4 @@
-import { App, Keymap, PaneType, TFile, View, parseFrontMatterEntry } from 'obsidian';
+import { App, Keymap, PaneType, TFile, View } from 'obsidian';
 import { For, JSX, createMemo } from 'solid-js';
 
 import FileAliasesMap from './FileAliasesMap.ts';
@@ -17,9 +17,8 @@ function DisambiguationPage(props: {
   );
   const filesWithData = createMemo(() =>
     matchedFiles().map((file) => {
-      const frontmatter = app().metadataCache.getFileCache(file)?.frontmatter;
       const linktext = app().metadataCache.fileToLinktext(file, '');
-      const title = (parseFrontMatterEntry(frontmatter, 'title') as string | null) ?? file.basename;
+      const title = props.fileAliases.getFileTitle(file);
       return { file, linktext, title };
     }),
   );
