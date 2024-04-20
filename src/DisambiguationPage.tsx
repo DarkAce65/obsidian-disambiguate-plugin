@@ -1,12 +1,4 @@
-import {
-  App,
-  Keymap,
-  PaneType,
-  TFile,
-  View,
-  parseFrontMatterAliases,
-  parseFrontMatterEntry,
-} from 'obsidian';
+import { App, Keymap, PaneType, TFile, View, parseFrontMatterEntry } from 'obsidian';
 import { For, JSX, createMemo } from 'solid-js';
 
 import FileAliasesMap from './FileAliasesMap.ts';
@@ -28,9 +20,7 @@ function DisambiguationPage(props: {
       const frontmatter = app().metadataCache.getFileCache(file)?.frontmatter;
       const linktext = app().metadataCache.fileToLinktext(file, '');
       const title = (parseFrontMatterEntry(frontmatter, 'title') as string | null) ?? file.basename;
-      const aliases =
-        parseFrontMatterAliases(frontmatter)?.filter((alias) => alias !== title) ?? [];
-      return { file, linktext, title, aliases };
+      return { file, linktext, title };
     }),
   );
 
@@ -38,40 +28,30 @@ function DisambiguationPage(props: {
     <>
       <h1>"{props.linktext}" could refer to multiple notes</h1>
       <For each={filesWithData()}>
-        {({ file, linktext, title, aliases }) => (
-          <>
-            <p>
-              <span>
-                <a
-                  role="button"
-                  tabindex="0"
-                  style={{ 'margin-right': '12px' }}
-                  onMouseOver={(event) => {
-                    hoverLink(app().workspace, props.view, event, linktext);
-                  }}
-                  onClick={(event) => {
+        {({ file, linktext, title }) => (
+          <ul>
+            <li>
+              <a
+                role="button"
+                tabindex="0"
+                style={{ 'margin-right': '12px' }}
+                onMouseOver={(event) => {
+                  hoverLink(app().workspace, props.view, event, linktext);
+                }}
+                onClick={(event) => {
+                  props.openFile(file, Keymap.isModEvent(event));
+                }}
+                onMouseDown={(event) => {
+                  if (event.button === 1) {
                     props.openFile(file, Keymap.isModEvent(event));
-                  }}
-                  onMouseDown={(event) => {
-                    if (event.button === 1) {
-                      props.openFile(file, Keymap.isModEvent(event));
-                    }
-                  }}
-                >
-                  {title}
-                </a>
-                <code>
-                  <small>{file.path}</small>
-                </code>
-              </span>
-              {aliases.length > 0 && (
-                <>
-                  <br />
-                  <small>Also known as: {aliases.join(', ')}</small>
-                </>
-              )}
-            </p>
-          </>
+                  }
+                }}
+              >
+                {title}
+              </a>
+              <small>{file.path}</small>
+            </li>
+          </ul>
         )}
       </For>
     </>
