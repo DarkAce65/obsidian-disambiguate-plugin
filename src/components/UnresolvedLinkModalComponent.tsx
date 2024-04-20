@@ -1,4 +1,6 @@
-import { App, TFile, normalizePath } from 'obsidian';
+import { posix as posixPath } from 'path';
+
+import { App, TFile, Vault, normalizePath } from 'obsidian';
 import { JSX, createMemo, createSignal, onMount } from 'solid-js';
 
 import FileSuggestModal from '../FileSuggestModal.tsx';
@@ -7,6 +9,33 @@ import FileAliasesMap from '../utils/FileAliasesMap.ts';
 import { ensureExtension } from '../utils/utils.ts';
 
 import FormControl from './FormControl.tsx';
+
+function parseFolderAndFilename(
+  vault: Vault,
+  sourceFile: TFile,
+  linktext: string,
+): { folder: SuggestedFolder; filename: string } {
+  const filePath = sourceFile.parent!.path;
+  let folder: SuggestedFolder = { type: 'existing', path: filePath };
+  let filename: string = linktext;
+
+  if (linktext.includes('/')) {
+    const combinedPath = normalizePath(posixPath.join(filePath, linktext));
+    const splitIndex = combinedPath.lastIndexOf('/');
+    if (splitIndex !== -1) {
+      const folderPath = normalizePath(combinedPath.slice(0, splitIndex));
+
+      folder = {
+        type: vault.getFolderByPath(folderPath) === null ? 'new' : 'existing',
+        path: folderPath,
+      };
+      filename = normalizePath(combinedPath.slice(splitIndex + 1));
+    }
+  }
+
+  console.log(folder, filename);
+  return { folder, filename };
+}
 
 function UnresolvedLinkModalComponent(props: {
   app: App;
@@ -19,8 +48,7 @@ function UnresolvedLinkModalComponent(props: {
   let folderInput: HTMLInputElement;
 
   const [newFolder, setNewFolder] = createSignal<SuggestedFolder | null>(null);
-  // eslint-disable-next-line solid/reactivity
-  const [newFilename, setNewFilename] = createSignal(props.linktext);
+  const [newFilename, setNewFilename] = createSignal('');
   const newFilePath = createMemo((): string | null => {
     const folder = newFolder();
     const filename = newFilename();
@@ -53,12 +81,15 @@ function UnresolvedLinkModalComponent(props: {
       folderInput,
       (suggestedFolder) => setNewFolder(suggestedFolder),
     );
-    const initialFolder: SuggestedFolder = {
-      type: 'existing',
-      path: props.sourceFile.parent!.path,
-    };
-    setNewFolder(initialFolder);
-    folderInputSuggest.setValue(initialFolder.path);
+
+    const { folder, filename } = parseFolderAndFilename(
+      props.app.vault,
+      props.sourceFile,
+      props.linktext,
+    );
+    setNewFolder(folder);
+    setNewFilename(filename);
+    folderInputSuggest.setValue(folder.path);
   });
 
   return (
