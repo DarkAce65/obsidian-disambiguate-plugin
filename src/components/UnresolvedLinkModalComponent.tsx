@@ -1,6 +1,6 @@
 import { posix as posixPath } from 'path';
 
-import { App, TFile, Vault, normalizePath } from 'obsidian';
+import { App, TFile, normalizePath } from 'obsidian';
 import { JSX, createMemo, createSignal, onMount } from 'solid-js';
 
 import FileSuggestModal from '../FileSuggestModal.tsx';
@@ -11,22 +11,22 @@ import { ensureExtension } from '../utils/utils.ts';
 import FormControl from './FormControl.tsx';
 
 function parseFolderAndFilename(
-  vault: Vault,
+  app: App,
   sourceFile: TFile,
   linktext: string,
 ): { folder: SuggestedFolder; filename: string } {
-  const filePath = sourceFile.parent!.path;
-  let folder: SuggestedFolder = { type: 'existing', path: filePath };
+  const baseFolderPath = sourceFile.parent!.path;
+  const newFileFolderPath = app.fileManager.getNewFileParent(baseFolderPath).path;
+  let folder: SuggestedFolder = { type: 'existing', path: newFileFolderPath };
   let filename: string = linktext;
 
   if (linktext.includes('/')) {
-    const combinedPath = normalizePath(posixPath.join(filePath, linktext));
+    const combinedPath = normalizePath(posixPath.join(baseFolderPath, linktext));
     const splitIndex = combinedPath.lastIndexOf('/');
     if (splitIndex !== -1) {
       const folderPath = normalizePath(combinedPath.slice(0, splitIndex));
-
       folder = {
-        type: vault.getFolderByPath(folderPath) === null ? 'new' : 'existing',
+        type: app.vault.getFolderByPath(folderPath) === null ? 'new' : 'existing',
         path: folderPath,
       };
       filename = normalizePath(combinedPath.slice(splitIndex + 1));
@@ -82,7 +82,7 @@ function UnresolvedLinkModalComponent(props: {
     );
 
     const { folder, filename } = parseFolderAndFilename(
-      props.app.vault,
+      props.app,
       props.sourceFile,
       props.linktext,
     );
