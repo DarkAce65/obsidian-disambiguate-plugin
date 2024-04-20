@@ -11,6 +11,10 @@ function ensureLeadingAndTrailingSlash(path: string): string {
   return normalizedPath;
 }
 
+export function ensureExtension(path: string, extension: string): string {
+  return path.toLowerCase().endsWith(`.${extension.toLowerCase()}`) ? path : `${path}.${extension}`;
+}
+
 export function hoverLink(
   workspace: Workspace,
   view: View,

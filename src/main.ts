@@ -1,21 +1,43 @@
 import { around } from 'monkey-around';
-import { Plugin, TFile, Workspace, getLinkpath } from 'obsidian';
+import { Plugin, TFile, Vault, Workspace, getLinkpath } from 'obsidian';
 
 import DisambiguationView, {
   DISAMBIGUATION_VIEW_TYPE,
   DisambiguationViewState,
 } from './DisambiguationView.tsx';
 import FileAliasesMap from './FileAliasesMap.ts';
+import UnresolvedLinkModal from './UnresolvedLinkModal.tsx';
 
 class DisambiguatePlugin extends Plugin {
   onload(): void {
     const fileAliases = new FileAliasesMap();
-    for (const file of this.app.vault.getMarkdownFiles()) {
-      const cachedMetadata = this.app.metadataCache.getFileCache(file);
-      if (cachedMetadata !== null) {
-        fileAliases.updateFileAliases(file, cachedMetadata);
+
+    let fileAliasesInitialized = false;
+    const initializeFileAliasesIfNeeded = (): void => {
+      if (
+        !(this.app.metadataCache as unknown as { initialized: boolean }).initialized ||
+        fileAliasesInitialized
+      ) {
+        return;
       }
-    }
+
+      Vault.recurseChildren(this.app.vault.getRoot(), (file) => {
+        if (file instanceof TFile) {
+          const cachedMetadata = this.app.metadataCache.getFileCache(file);
+          if (cachedMetadata !== null) {
+            fileAliases.updateFileAliases(file, cachedMetadata);
+          }
+        }
+      });
+      fileAliasesInitialized = true;
+    };
+
+    initializeFileAliasesIfNeeded();
+    this.registerEvent(
+      this.app.metadataCache.on('resolved', () => {
+        initializeFileAliasesIfNeeded();
+      }),
+    );
 
     this.registerView(
       DISAMBIGUATION_VIEW_TYPE,
@@ -59,17 +81,27 @@ class DisambiguatePlugin extends Plugin {
           return async function (this: Workspace, ...args) {
             const [linktext, sourcePath, newLeaf] = args;
             const linkpath = getLinkpath(linktext);
+            const sourceFile = app.vault.getFileByPath(sourcePath)!;
 
             const bestMatch = app.metadataCache.getFirstLinkpathDest(linkpath, sourcePath);
             if (bestMatch === null) {
-              // TODO: Handle no matching link
+              const modal = new UnresolvedLinkModal(app, fileAliases, {
+                linktext,
+                sourceFile,
+                createNewNote: (path) => {
+                  console.log('create', path);
+                  modal.close();
+                },
+                linkToExistingNote: (file) => {
+                  console.log('link', file.path);
+                  modal.close();
+                },
+              });
+              modal.open();
               return Promise.resolve();
             }
 
-            const potentialMatches = fileAliases.getLinkMatches(
-              linktext,
-              app.vault.getFileByPath(sourcePath)!,
-            );
+            const potentialMatches = fileAliases.getLinkMatches(linktext, sourceFile);
             if (potentialMatches.length > 1) {
               const state: DisambiguationViewState = { linktext, sourcePath };
               return this.getLeaf(newLeaf).setViewState({
