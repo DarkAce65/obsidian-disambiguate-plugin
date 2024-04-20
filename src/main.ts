@@ -38,6 +38,14 @@ class DisambiguatePlugin extends Plugin {
     );
 
     this.registerEvent(
+      this.app.vault.on('delete', (file) => {
+        if (file instanceof TFile) {
+          fileAliases.removeFile(file);
+        }
+      }),
+    );
+
+    this.registerEvent(
       this.app.metadataCache.on('changed', (file, data, cache) => {
         fileAliases.updateFileAliases(file, cache);
       }),

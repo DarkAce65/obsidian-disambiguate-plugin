@@ -67,6 +67,16 @@ class FileAliasesMap {
       }
     }
   }
+
+  removeFile(file: TFile): void {
+    const existingAliases = this.fileToAliases.get(file);
+    if (existingAliases !== undefined) {
+      for (const existingAlias of existingAliases) {
+        this.aliasToFiles.remove(existingAlias, file);
+      }
+    }
+    this.fileToAliases.delete(file);
+  }
 }
 
 export default FileAliasesMap;
