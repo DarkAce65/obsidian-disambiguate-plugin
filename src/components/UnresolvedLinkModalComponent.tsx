@@ -33,7 +33,6 @@ function parseFolderAndFilename(
     }
   }
 
-  console.log(folder, filename);
   return { folder, filename };
 }
 
