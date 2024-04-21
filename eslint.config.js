@@ -61,6 +61,7 @@ export default [
       ...typescriptPlugin.configs['recommended-type-checked'].rules,
       ...solidPlugin.configs['typescript'].rules,
       'no-shadow': 'off',
+      'no-undef': 'off',
       '@typescript-eslint/no-shadow': 'error',
       '@typescript-eslint/explicit-function-return-type': ['warn', { allowExpressions: true }],
       '@typescript-eslint/no-floating-promises': 'off',
