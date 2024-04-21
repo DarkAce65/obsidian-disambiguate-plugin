@@ -30,7 +30,7 @@ class FolderPathInputSuggest extends AbstractInputSuggest<SuggestedFolder> {
     });
     inputEl.addEventListener('blur', () => {
       if (inputEl.value.trim().length === 0) {
-        inputEl.value = '/';
+        this.setValue('/');
       }
     });
   }
