@@ -1,6 +1,7 @@
 import { App, Modal, TFile } from 'obsidian';
 import { render } from 'solid-js/web';
 
+import { SuggestedFolder } from './FolderPathInputSuggest.tsx';
 import UnresolvedLinkModalComponent from './components/UnresolvedLinkModalComponent.tsx';
 import FileAliasesMap from './utils/FileAliasesMap.ts';
 
@@ -13,7 +14,7 @@ class UnresolvedLinkModal extends Modal {
     private options: {
       linktext: string;
       sourceFile: TFile;
-      createNewNote: (path: string) => void;
+      createNewNote: (path: string, folder: SuggestedFolder) => void;
       linkToExistingNote: (file: TFile) => void;
     },
   ) {

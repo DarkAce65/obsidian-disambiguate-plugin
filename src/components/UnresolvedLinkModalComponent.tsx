@@ -41,7 +41,7 @@ function UnresolvedLinkModalComponent(props: {
   fileAliases: FileAliasesMap;
   sourceFile: TFile;
   linktext: string;
-  createNewNote: (path: string) => void;
+  createNewNote: (path: string, folder: SuggestedFolder) => void;
   linkToExistingNote: (file: TFile) => void;
 }): JSX.Element {
   let folderInput: HTMLInputElement;
@@ -117,8 +117,9 @@ function UnresolvedLinkModalComponent(props: {
           class={canCreateFile() ? 'mod-cta' : 'mod-muted'}
           onClick={() => {
             const filePath = newFilePath();
-            if (filePath) {
-              props.createNewNote(filePath);
+            const folder = newFolder();
+            if (filePath !== null && folder !== null) {
+              props.createNewNote(filePath, folder);
             }
           }}
         >
@@ -144,14 +145,7 @@ function UnresolvedLinkModalComponent(props: {
         />
         <button onClick={() => fileSuggestModal().open()}>...</button>
       </p>
-      <p
-        style={{
-          display: 'flex',
-          gap: '12px',
-          'align-items': 'center',
-          'justify-content': 'center',
-        }}
-      >
+      <p style={{ 'text-align': 'center' }}>
         <button
           disabled={!canLinkToFile()}
           class={canLinkToFile() ? 'mod-cta' : 'mod-muted'}
@@ -163,18 +157,6 @@ function UnresolvedLinkModalComponent(props: {
           }}
         >
           Link to existing note
-        </button>
-        <button
-          disabled={!canLinkToFile()}
-          class={canLinkToFile() ? 'mod-cta' : 'mod-muted'}
-          onClick={() => {
-            const filePath = linkFile();
-            if (filePath !== null) {
-              props.linkToExistingNote(filePath);
-            }
-          }}
-        >
-          Add alias to existing note
         </button>
       </p>
     </div>

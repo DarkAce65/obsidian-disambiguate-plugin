@@ -1,4 +1,7 @@
-import { TFile, TFolder, View, Workspace } from 'obsidian';
+import { App, Command, Notice, Pos, TFile, TFolder, View, Workspace } from 'obsidian';
+
+import { SuggestedFolder } from '../FolderPathInputSuggest.tsx';
+import NoticeWithAction from '../NoticeWithAction.tsx';
 
 function ensureLeadingAndTrailingSlash(path: string): string {
   let normalizedPath = path;
@@ -15,6 +18,67 @@ export function ensureExtension(path: string, extension: string): string {
   return path.toLowerCase().endsWith(`.${extension.toLowerCase()}`) ? path : `${path}.${extension}`;
 }
 
+export async function createFile(app: App, folder: SuggestedFolder, path: string): Promise<TFile> {
+  if (folder.type === 'new') {
+    await app.vault.createFolder(folder.path);
+  }
+
+  return app.vault.create(path, '');
+}
+
+export async function replaceLinksInFile(
+  app: App,
+  sourceFile: TFile,
+  targetFile: TFile,
+  originalLinktext: string,
+): Promise<void> {
+  const changes: [Pos, string][] = [];
+  const links = app.metadataCache.getFileCache(sourceFile)!.links;
+  for (const { link, displayText, original, position } of links!) {
+    const newMarkdownLink = app.fileManager.generateMarkdownLink(
+      targetFile,
+      sourceFile.path,
+      undefined,
+      displayText,
+    );
+    if (link === originalLinktext && original !== newMarkdownLink) {
+      changes.push([position, newMarkdownLink]);
+    }
+  }
+
+  if (changes.length === 0) {
+    return;
+  }
+
+  changes.sort(([a], [b]) => b.start.offset - a.start.offset);
+  let previousData: string;
+  await app.vault.process(sourceFile, (data) => {
+    previousData = data;
+    let updatedData = data;
+    for (const [position, newMarkdownLink] of changes) {
+      const before = updatedData.slice(0, position.start.offset);
+      const after = updatedData.slice(position.end.offset);
+      updatedData = `${before}${newMarkdownLink}${after}`;
+    }
+    return updatedData;
+  });
+
+  new NoticeWithAction({
+    message: `Updated ${changes.length} ${
+      changes.length === 1 ? 'link' : 'links'
+    } in ${sourceFile.path}`,
+    actionText: 'Undo',
+    onClick: (notice) => {
+      notice.hide();
+      app.vault
+        .process(sourceFile, () => previousData)
+        .then(() => {
+          new Notice(`Reverted changes to ${sourceFile.path}`);
+        });
+    },
+  });
+}
+
 export function getFolderPaths(root: TFolder): string[] {
   const childFolders = root.children.filter((f): f is TFolder => f instanceof TFolder);
   if (childFolders.length === 0) {
@@ -22,6 +86,16 @@ export function getFolderPaths(root: TFolder): string[] {
   }
 
   return [root.path, ...childFolders.flatMap((childFolder) => getFolderPaths(childFolder))];
+}
+
+export function revealActiveFileInNavigation(
+  app: App & {
+    commands: { findCommand: (id: string) => Command; executeCommandById: (id: string) => boolean };
+  },
+): void {
+  if (app.commands.findCommand('file-explorer:reveal-active-file')) {
+    app.commands.executeCommandById('file-explorer:reveal-active-file');
+  }
 }
 
 export function hoverLink(

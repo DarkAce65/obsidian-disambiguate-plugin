@@ -7,6 +7,7 @@ import DisambiguationView, {
 } from './DisambiguationView.tsx';
 import UnresolvedLinkModal from './UnresolvedLinkModal.tsx';
 import FileAliasesMap from './utils/FileAliasesMap.ts';
+import { createFile, replaceLinksInFile, revealActiveFileInNavigation } from './utils/utils.ts';
 
 class DisambiguatePlugin extends Plugin {
   onload(): void {
@@ -43,6 +44,7 @@ class DisambiguatePlugin extends Plugin {
       DISAMBIGUATION_VIEW_TYPE,
       (leaf) => new DisambiguationView(leaf, fileAliases),
     );
+
     this.registerHoverLinkSource(DISAMBIGUATION_VIEW_TYPE, {
       defaultMod: false,
       display: 'Disambiguation view',
@@ -88,15 +90,33 @@ class DisambiguatePlugin extends Plugin {
               const modal = new UnresolvedLinkModal(app, fileAliases, {
                 linktext,
                 sourceFile,
-                createNewNote: (path) => {
-                  console.log('create', path);
-                  modal.close();
+                createNewNote: (path, folder) => {
+                  createFile(app, folder, path)
+                    .then((file) => {
+                      // No need to await this
+                      replaceLinksInFile(app, sourceFile, file, linktext);
+
+                      modal.close();
+
+                      const newLinktext = app.metadataCache.fileToLinktext(file, sourcePath);
+                      return _openLinkText.apply(this, [newLinktext, args[1], args[2], args[3]]);
+                    })
+                    .then(() => {
+                      // @ts-expect-error Missing upstream type
+                      revealActiveFileInNavigation(app);
+                    });
                 },
                 linkToExistingNote: (file) => {
-                  console.log('link', file.path);
+                  // No need to await this
+                  replaceLinksInFile(app, sourceFile, file, linktext);
+
                   modal.close();
+
+                  const newLinktext = app.metadataCache.fileToLinktext(file, sourcePath);
+                  _openLinkText.apply(this, [newLinktext, args[1], args[2], args[3]]);
                 },
               });
+
               modal.open();
               return Promise.resolve();
             }
