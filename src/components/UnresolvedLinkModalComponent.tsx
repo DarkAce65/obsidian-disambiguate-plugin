@@ -21,7 +21,7 @@ function parseFolderAndFilename(
   let filename: string = linktext;
 
   if (linktext.includes('/')) {
-    const combinedPath = normalizePath(posixPath.join(baseFolderPath, linktext));
+    const combinedPath = posixPath.join(baseFolderPath, linktext);
     const splitIndex = combinedPath.lastIndexOf('/');
     if (splitIndex !== -1) {
       const folderPath = normalizePath(combinedPath.slice(0, splitIndex));
