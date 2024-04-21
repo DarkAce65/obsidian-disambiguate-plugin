@@ -33,8 +33,8 @@ export async function replaceLinksInFile(
   originalLinktext: string,
 ): Promise<void> {
   const changes: [Pos, string][] = [];
-  const links = app.metadataCache.getFileCache(sourceFile)!.links;
-  for (const { link, displayText, original, position } of links!) {
+  const links = app.metadataCache.getFileCache(sourceFile)!.links!;
+  for (const { link, displayText, original, position } of links) {
     const newMarkdownLink = app.fileManager.generateMarkdownLink(
       targetFile,
       sourceFile.path,
@@ -50,6 +50,7 @@ export async function replaceLinksInFile(
     return;
   }
 
+  // Replace in reverse order of occurrence in the file (assumes all links are non-overlapping)
   changes.sort(([a], [b]) => b.start.offset - a.start.offset);
   let previousData: string;
   await app.vault.process(sourceFile, (data) => {
