@@ -1,5 +1,5 @@
 import { around } from 'monkey-around';
-import { Plugin, TFile, Vault, Workspace, getLinkpath } from 'obsidian';
+import { Plugin, TFile, Workspace, getLinkpath } from 'obsidian';
 
 import DisambiguationView, {
   DISAMBIGUATION_VIEW_TYPE,
@@ -22,14 +22,12 @@ class DisambiguatePlugin extends Plugin {
         return;
       }
 
-      Vault.recurseChildren(this.app.vault.getRoot(), (file) => {
-        if (file instanceof TFile) {
-          const cachedMetadata = this.app.metadataCache.getFileCache(file);
-          if (cachedMetadata !== null) {
-            fileAliases.updateFileAliases(file, cachedMetadata);
-          }
+      for (const file of this.app.vault.getMarkdownFiles()) {
+        const cachedMetadata = this.app.metadataCache.getFileCache(file);
+        if (cachedMetadata !== null) {
+          fileAliases.updateFileAliases(file, cachedMetadata);
         }
-      });
+      }
       fileAliasesInitialized = true;
     };
 
