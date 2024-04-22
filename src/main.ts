@@ -14,11 +14,18 @@ class DisambiguatePlugin extends Plugin {
     const fileAliases = new FileAliasesMap();
 
     let fileAliasesInitialized = false;
-    const initializeFileAliasesIfNeeded = (): void => {
-      if (
-        !(this.app.metadataCache as unknown as { initialized: boolean }).initialized ||
-        fileAliasesInitialized
-      ) {
+    const initializeFileAliasesIfNeeded = (retries = 3): void => {
+      if (fileAliasesInitialized) {
+        return;
+      }
+
+      if (!(this.app.metadataCache as unknown as { initialized: boolean }).initialized) {
+        // Retry initialization if cache is not ready yet
+        if (retries > 0) {
+          setTimeout(() => {
+            initializeFileAliasesIfNeeded(retries - 1);
+          }, 500);
+        }
         return;
       }
 
@@ -31,10 +38,10 @@ class DisambiguatePlugin extends Plugin {
       fileAliasesInitialized = true;
     };
 
-    initializeFileAliasesIfNeeded();
+    initializeFileAliasesIfNeeded(0);
     this.registerEvent(
       this.app.metadataCache.on('resolved', () => {
-        initializeFileAliasesIfNeeded();
+        initializeFileAliasesIfNeeded(3);
       }),
     );
 
