@@ -10,26 +10,44 @@ import { ensureExtension } from '../utils/utils.ts';
 
 import FormControl from './FormControl.tsx';
 
+function normalizeInitialValue(value: string): string {
+  return value.toLowerCase().replaceAll(/[^0-9a-zA-Z-._ ]+/g, '_');
+}
+
 function parseFolderAndFilename(
   app: App,
   sourceFile: TFile,
   linktext: string,
 ): { folder: SuggestedFolder; filename: string } {
-  const newFileFolderPath = app.fileManager.getNewFileParent(sourceFile.path).path;
-  let folder: SuggestedFolder = { type: 'existing', path: newFileFolderPath };
-  let filename: string = linktext;
+  let folder: SuggestedFolder;
+  let filename: string;
 
   if (linktext.includes('/')) {
-    const combinedPath = posixPath.join(sourceFile.parent!.path, linktext);
-    const splitIndex = combinedPath.lastIndexOf('/');
-    if (splitIndex !== -1) {
-      const folderPath = normalizePath(combinedPath.slice(0, splitIndex));
-      folder = {
-        type: app.vault.getFolderByPath(folderPath) === null ? 'new' : 'existing',
-        path: folderPath,
-      };
-      filename = normalizePath(combinedPath.slice(splitIndex + 1));
+    const pathSegments = posixPath
+      .resolve('/', sourceFile.parent!.path, linktext)
+      .split('/')
+      .filter((segment) => segment.length > 0);
+
+    // Normalize any segments that don't correspond to an existing path
+    let folderPath = '/';
+    for (const segment of pathSegments.slice(0, -1)) {
+      const newFolderPath = normalizePath(`${folderPath}/${segment}`);
+      if (app.vault.getFolderByPath(newFolderPath) !== null) {
+        folderPath = newFolderPath;
+      } else {
+        folderPath = normalizePath(`${folderPath}/${normalizeInitialValue(segment)}`);
+      }
     }
+
+    folder = {
+      type: app.vault.getFolderByPath(folderPath) === null ? 'new' : 'existing',
+      path: folderPath,
+    };
+    filename = normalizeInitialValue(pathSegments[pathSegments.length - 1]);
+  } else {
+    const newFileFolderPath = app.fileManager.getNewFileParent(sourceFile.path).path;
+    folder = { type: 'existing', path: newFileFolderPath };
+    filename = normalizeInitialValue(linktext);
   }
 
   return { folder, filename };
