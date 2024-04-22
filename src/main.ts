@@ -1,5 +1,5 @@
 import { around } from 'monkey-around';
-import { Plugin, TFile, Workspace, getLinkpath } from 'obsidian';
+import { Plugin, Workspace, getLinkpath } from 'obsidian';
 
 import DisambiguationView, {
   DISAMBIGUATION_VIEW_TYPE,
@@ -50,7 +50,7 @@ class DisambiguatePlugin extends Plugin {
 
     this.registerEvent(
       this.app.vault.on('rename', (file) => {
-        if (file instanceof TFile) {
+        if (FileAliasesMap.isMarkdownFile(file)) {
           const cache = this.app.metadataCache.getFileCache(file);
           if (cache !== null) {
             fileAliases.updateFileAliases(file, cache);
@@ -61,7 +61,7 @@ class DisambiguatePlugin extends Plugin {
 
     this.registerEvent(
       this.app.vault.on('delete', (file) => {
-        if (file instanceof TFile) {
+        if (FileAliasesMap.isMarkdownFile(file)) {
           fileAliases.removeFile(file);
         }
       }),
@@ -69,7 +69,9 @@ class DisambiguatePlugin extends Plugin {
 
     this.registerEvent(
       this.app.metadataCache.on('changed', (file, data, cache) => {
-        fileAliases.updateFileAliases(file, cache);
+        if (FileAliasesMap.isMarkdownFile(file)) {
+          fileAliases.updateFileAliases(file, cache);
+        }
       }),
     );
 

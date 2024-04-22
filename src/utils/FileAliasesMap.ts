@@ -1,5 +1,11 @@
 import { matchSorter, rankings } from 'match-sorter';
-import { CachedMetadata, TFile, parseFrontMatterAliases, parseFrontMatterEntry } from 'obsidian';
+import {
+  CachedMetadata,
+  TAbstractFile,
+  TFile,
+  parseFrontMatterAliases,
+  parseFrontMatterEntry,
+} from 'obsidian';
 
 import SetMultimap from './SetMultimap.ts';
 import { compareFileDistance } from './utils.ts';
@@ -13,6 +19,10 @@ class FileAliasesMap {
     this.fileToTitle = new Map();
     this.fileToAliases = new SetMultimap();
     this.aliasToFiles = new SetMultimap();
+  }
+
+  static isMarkdownFile(file: TAbstractFile): file is TFile {
+    return file instanceof TFile && file.extension.toLowerCase() === 'md';
   }
 
   private getAliasesFromMetadata(cache: CachedMetadata): {
