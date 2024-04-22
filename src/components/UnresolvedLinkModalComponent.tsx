@@ -15,13 +15,12 @@ function parseFolderAndFilename(
   sourceFile: TFile,
   linktext: string,
 ): { folder: SuggestedFolder; filename: string } {
-  const baseFolderPath = sourceFile.parent!.path;
-  const newFileFolderPath = app.fileManager.getNewFileParent(baseFolderPath).path;
+  const newFileFolderPath = app.fileManager.getNewFileParent(sourceFile.path).path;
   let folder: SuggestedFolder = { type: 'existing', path: newFileFolderPath };
   let filename: string = linktext;
 
   if (linktext.includes('/')) {
-    const combinedPath = posixPath.join(baseFolderPath, linktext);
+    const combinedPath = posixPath.join(sourceFile.parent!.path, linktext);
     const splitIndex = combinedPath.lastIndexOf('/');
     if (splitIndex !== -1) {
       const folderPath = normalizePath(combinedPath.slice(0, splitIndex));
