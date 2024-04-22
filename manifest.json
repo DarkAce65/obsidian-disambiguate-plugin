@@ -1,7 +1,7 @@
 {
   "id": "obsidian-disambiguate-plugin",
   "name": "Disambiguate",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "minAppVersion": "0.15.0",
   "description": "Supercharges the experience for unresolved links.",
   "author": "Taha Vasowalla",

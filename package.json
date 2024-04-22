@@ -1,6 +1,6 @@
 {
   "name": "obsidian-disambiguate-plugin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "This obsidian plugin provides a supercharged experience for unresolved links.",
   "main": "main.js",
   "type": "module",
