@@ -44,12 +44,8 @@ class FolderPathInputSuggest extends AbstractInputSuggest<SuggestedFolder> {
 
     for (const result of results) {
       if (result.path === normalizedQuery) {
-        return [...results, { type: 'placeholder', path: 'Type to enter' }];
+        return [...results, { type: 'placeholder', path: 'Type to create new folder(s)' }];
       }
-    }
-
-    if (normalizedQuery.length > 0) {
-      return [...results, { type: 'new', path: normalizedQuery }];
     }
 
     return results;
@@ -57,14 +53,12 @@ class FolderPathInputSuggest extends AbstractInputSuggest<SuggestedFolder> {
 
   override renderSuggestion(value: SuggestedFolder, el: HTMLElement): void {
     switch (value.type) {
+      case 'new':
       case 'existing':
         el.innerHTML = value.path;
         break;
-      case 'new':
-        el.innerHTML = `${value.path} <small><i>(new folder)</i></small>`;
-        break;
       case 'placeholder':
-        el.innerHTML = '<i>Type to create a new folder</i>';
+        el.innerHTML = `<i>${value.path}</i>`;
         break;
     }
   }

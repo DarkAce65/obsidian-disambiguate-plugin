@@ -112,7 +112,10 @@ function UnresolvedLinkModalComponent(props: {
     <div>
       <h1 tabindex={0}>"{props.linktext}" doesn't point to an existing note</h1>{' '}
       <p>
-        <FormControl label="Folder">
+        <FormControl
+          label="Folder"
+          message={newFolder()?.type === 'new' ? 'Will create new folder(s)' : undefined}
+        >
           <input ref={folderInput!} type="text" style={{ width: '100%' }} />
         </FormControl>
       </p>
