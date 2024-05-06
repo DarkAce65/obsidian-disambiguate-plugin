@@ -67,7 +67,7 @@ function UnresolvedLinkModalComponent(props: {
   const [newFilename, setNewFilename] = createSignal('');
   const newFilePath = createMemo((): string | null => {
     const folder = newFolder();
-    const filename = newFilename();
+    const filename = newFilename().trim();
     return folder !== null && filename.length > 0
       ? ensureExtension(normalizePath(`${folder.path}/${filename}`), 'md')
       : null;
