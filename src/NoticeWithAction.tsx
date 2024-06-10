@@ -24,6 +24,7 @@ class NoticeWithAction {
     div.appendText(message);
 
     const a = createEl('a');
+    a.style.flexShrink = '0';
     a.innerText = actionText;
     a.addEventListener('click', (event) => {
       event.stopPropagation();
